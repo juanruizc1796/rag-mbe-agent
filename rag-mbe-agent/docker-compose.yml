@@ -1,0 +1,120 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# MBE RAG Agent — Docker Compose Orchestration
+# Services: app (FastAPI+LangGraph), postgres, ollama
+# ─────────────────────────────────────────────────────────────────────────────
+
+networks:
+  mbe_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  faiss_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: mbe_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mbe_agent}
+      POSTGRES_USER: ${POSTGRES_USER:-mbe_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mbe_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-mbe_user} -d ${POSTGRES_DB:-mbe_agent}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - mbe_network
+
+  # ── Ollama ──────────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mbe_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_MAX_LOADED_MODELS=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - mbe_network
+    # Uncomment the following if you have an NVIDIA GPU:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # ── Model Puller (runs once, pulls llama3.1:8b) ────────────────────────────
+  ollama_pull:
+    image: ollama/ollama:latest
+    container_name: mbe_ollama_pull
+    depends_on:
+      - ollama
+    entrypoint: >
+      sh -c "
+        ollama pull mistral &&
+        echo 'Model pulled successfully.'
+      "
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    networks:
+      - mbe_network
+    restart: "no"
+
+  # ── Application (FastAPI + LangGraph) ──────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mbe_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - POSTGRES_HOST=postgres
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - faiss_data:/app/data/faiss_index
+      - ./data/pdfs:/app/data/pdfs:ro # Mount your PDFs here
+    depends_on:
+      - postgres
+      - ollama
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - mbe_network

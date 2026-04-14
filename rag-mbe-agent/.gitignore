@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+data/faiss_index/
+data/pdfs/
+*.pdf
+.DS_Store
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+htmlcov/
+.coverage
