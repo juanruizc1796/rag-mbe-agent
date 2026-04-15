@@ -1,4 +1,4 @@
-# 🧬 MBE RAG Agent
+# MBE RAG Agent
 
 Agente conversacional de **Medicina Basada en la Evidencia (MBE)** construido con:
 
@@ -11,7 +11,7 @@ Agente conversacional de **Medicina Basada en la Evidencia (MBE)** construido co
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 rag-mbe-agent/
@@ -99,12 +99,14 @@ classify_intent          ← LLM clasifica: MBE o NON_MBE
 
 ---
 
-## 🚀 Setup con Docker (Recomendado)
+## Setup con Docker (Recomendado)
 
 ### Prerrequisitos
 
+- Git: Cualquier versión
+- Python ≥ 3.11
 - Docker ≥ 24
-- Docker Compose ≥ 2.20
+- Docker Compose ≥ 2.20 (Solo instalanado Docker Compose se instala Docker)
 - Al menos **16 GB RAM** (BioBERT + Llama 3.1 8B)
 - ~10 GB de espacio en disco (modelos)
 
@@ -139,7 +141,7 @@ Esto levantará:
 - `mbe_ollama_pull` — Descarga automática de `llama3.1:8b` (se ejecuta una vez)
 - `mbe_app` — FastAPI en puerto 8000
 
-> ⏱️ La primera vez puede tardar 10–20 minutos por la descarga del modelo (~4.7 GB).
+>  La primera vez puede tardar 10–20 minutos por la descarga del modelo (~4.7 GB).
 
 ### Paso 4 — Verificar que todo esté funcionando
 
@@ -178,7 +180,7 @@ curl -X POST http://localhost:8000/chat \
 
 ---
 
-## 💻 Setup Local (Sin Docker)
+## Setup Local (Sin Docker)
 
 ### Prerrequisitos
 
@@ -249,7 +251,7 @@ La API quedará disponible en `http://localhost:8000`.
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### `GET /health`
 
@@ -331,7 +333,7 @@ Obtener historial de conversación.
 
 ---
 
-## 💬 Ejemplos de Ejecución
+## Ejemplos de Ejecución
 
 ### Consulta MBE en español
 
@@ -380,7 +382,7 @@ curl -X POST http://localhost:8000/chat \
 
 ---
 
-## 🧪 Ejecutar Tests
+## Ejecutar Tests
 
 ```bash
 # Sin Docker
@@ -392,7 +394,7 @@ docker exec mbe_app python -m pytest tests/ -v
 
 ---
 
-## ⚙️ Variables de Configuración
+## Variables de Configuración
 
 | Variable | Default | Descripción |
 |---|---|---|
@@ -407,7 +409,7 @@ docker exec mbe_app python -m pytest tests/ -v
 
 ---
 
-## 🗃️ Esquema de Base de Datos
+## Esquema de Base de Datos
 
 ### `chat_history`
 
@@ -438,7 +440,7 @@ docker exec mbe_app python -m pytest tests/ -v
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Modificaciones y volver a lanzar sistema
 
@@ -499,7 +501,7 @@ cloudflared tunnel --url http://localhost:8000
 
 ---
 
-## 🛠️ Extender el Agente
+## Extender el Agente
 
 ### Agregar una nueva Tool
 
@@ -530,7 +532,7 @@ graph.add_edge("existing_node", "new_step")
 
 ---
 
-## 📦 Tecnologías
+## Tecnologías
 
 | Componente | Tecnología |
 |---|---|
